@@ -22,6 +22,72 @@ document.addEventListener('DOMContentLoaded', function() {
     let isAnimating = false;
     let currentAudio = null;
     
+    // Helper function to animate an element's transform
+    function animate(element, transforms, duration, callback) {
+        const startTime = performance.now();
+        const initialTransform = element.getAttribute('transform') || '';
+        
+        function step(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            // Apply easing (ease-in-out)
+            const eased = progress < 0.5 
+                ? 2 * progress * progress 
+                : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+            
+            if (transforms.translate) {
+                const x = transforms.translate.x || 0;
+                const y = transforms.translate.y || 0;
+                element.setAttribute('transform', `translate(${x * eased}, ${y * eased})`);
+            }
+            
+            if (progress < 1) {
+                requestAnimationFrame(step);
+            } else if (callback) {
+                callback();
+            }
+        }
+        
+        requestAnimationFrame(step);
+    }
+    
+    // Helper function to animate SVG line attributes
+    function animateLine(element, toAttrs, duration, callback) {
+        const startTime = performance.now();
+        const fromAttrs = {
+            x2: parseFloat(element.getAttribute('x2')),
+            y2: parseFloat(element.getAttribute('y2'))
+        };
+        
+        function step(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            // Apply easing
+            const eased = progress < 0.5 
+                ? 2 * progress * progress 
+                : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+            
+            if (toAttrs.x2 !== undefined) {
+                const x2 = fromAttrs.x2 + (toAttrs.x2 - fromAttrs.x2) * eased;
+                element.setAttribute('x2', x2);
+            }
+            if (toAttrs.y2 !== undefined) {
+                const y2 = fromAttrs.y2 + (toAttrs.y2 - fromAttrs.y2) * eased;
+                element.setAttribute('y2', y2);
+            }
+            
+            if (progress < 1) {
+                requestAnimationFrame(step);
+            } else if (callback) {
+                callback();
+            }
+        }
+        
+        requestAnimationFrame(step);
+    }
+    
     // Helper function to show status message
     function showStatus(message, type = 'info') {
         statusMessage.textContent = message;
@@ -40,25 +106,23 @@ document.addEventListener('DOMContentLoaded', function() {
         if (isAnimating) return;
         isAnimating = true;
         
-        const tl = gsap.timeline({
-            onComplete: () => { isAnimating = false; }
-        });
-        
-        tl.to(rightArm, {
-            attr: { x2: 25, y2: -40 },
-            duration: 0.3,
-            ease: "power2.out"
-        })
-        .to(rightArm, {
-            attr: { x2: 30, y2: -35 },
-            duration: 0.2,
-            repeat: 3,
-            yoyo: true
-        })
-        .to(rightArm, {
-            attr: { x2: 25, y2: -10 },
-            duration: 0.3,
-            ease: "power2.in"
+        // Raise arm
+        animateLine(rightArm, { x2: 25, y2: -40 }, 300, () => {
+            // Wave motion
+            let waveCount = 0;
+            const waveInterval = setInterval(() => {
+                if (waveCount >= 6) {
+                    clearInterval(waveInterval);
+                    // Lower arm back
+                    animateLine(rightArm, { x2: 25, y2: -10 }, 300, () => {
+                        isAnimating = false;
+                    });
+                    return;
+                }
+                const targetY = waveCount % 2 === 0 ? -35 : -40;
+                animateLine(rightArm, { x2: 25, y2: targetY }, 200);
+                waveCount++;
+            }, 200);
         });
     }
     
@@ -67,40 +131,30 @@ document.addEventListener('DOMContentLoaded', function() {
         if (isAnimating) return;
         isAnimating = true;
         
-        const tl = gsap.timeline({
-            onComplete: () => { isAnimating = false; }
-        });
+        // Get current position
+        const currentTransform = stickman.getAttribute('transform') || 'translate(100, 250)';
+        const match = currentTransform.match(/translate\(([^,]+),\s*([^)]+)\)/);
+        const baseX = match ? parseFloat(match[1]) : 100;
+        const baseY = match ? parseFloat(match[2]) : 250;
         
-        // Prepare to jump (crouch)
-        tl.to(stickman, {
-            y: 20,
-            duration: 0.2,
-            ease: "power2.in"
-        })
-        // Jump up
-        .to(stickman, {
-            y: -80,
-            duration: 0.4,
-            ease: "power2.out"
-        })
-        // Move arms during jump
-        .to([leftArm, rightArm], {
-            attr: { y2: -30 },
-            duration: 0.4,
-            ease: "power2.out"
-        }, "-=0.4")
-        // Fall down
-        .to(stickman, {
-            y: 0,
-            duration: 0.4,
-            ease: "power2.in"
-        })
-        // Return arms to normal
-        .to([leftArm, rightArm], {
-            attr: { y2: -10 },
-            duration: 0.4,
-            ease: "power2.in"
-        }, "-=0.4");
+        // Crouch
+        stickman.setAttribute('transform', `translate(${baseX}, ${baseY + 20})`);
+        
+        setTimeout(() => {
+            // Jump up
+            stickman.setAttribute('transform', `translate(${baseX}, ${baseY - 80})`);
+            animateLine(leftArm, { y2: -30 }, 400);
+            animateLine(rightArm, { y2: -30 }, 400);
+            
+            setTimeout(() => {
+                // Fall down
+                stickman.setAttribute('transform', `translate(${baseX}, ${baseY})`);
+                animateLine(leftArm, { y2: -10 }, 400);
+                animateLine(rightArm, { y2: -10 }, 400, () => {
+                    isAnimating = false;
+                });
+            }, 400);
+        }, 200);
     }
     
     // Animation: Dance
@@ -108,46 +162,37 @@ document.addEventListener('DOMContentLoaded', function() {
         if (isAnimating) return;
         isAnimating = true;
         
-        const tl = gsap.timeline({
-            repeat: 2,
-            onComplete: () => { isAnimating = false; }
-        });
+        const currentTransform = stickman.getAttribute('transform') || 'translate(100, 250)';
+        const match = currentTransform.match(/translate\(([^,]+),\s*([^)]+)\)/);
+        const baseX = match ? parseFloat(match[1]) : 100;
+        const baseY = match ? parseFloat(match[2]) : 250;
         
-        tl.to(stickman, {
-            rotation: -10,
-            duration: 0.25,
-            ease: "power1.inOut"
-        })
-        .to(leftArm, {
-            attr: { x2: -30, y2: -35 },
-            duration: 0.25,
-            ease: "power1.inOut"
-        }, "-=0.25")
-        .to(rightArm, {
-            attr: { x2: 30, y2: -35 },
-            duration: 0.25,
-            ease: "power1.inOut"
-        }, "-=0.25")
-        .to(stickman, {
-            rotation: 10,
-            duration: 0.25,
-            ease: "power1.inOut"
-        })
-        .to(leftArm, {
-            attr: { x2: -25, y2: -10 },
-            duration: 0.25,
-            ease: "power1.inOut"
-        }, "-=0.25")
-        .to(rightArm, {
-            attr: { x2: 25, y2: -10 },
-            duration: 0.25,
-            ease: "power1.inOut"
-        }, "-=0.25")
-        .to(stickman, {
-            rotation: 0,
-            duration: 0.25,
-            ease: "power1.inOut"
-        });
+        let danceStep = 0;
+        const danceInterval = setInterval(() => {
+            if (danceStep >= 6) {
+                clearInterval(danceInterval);
+                stickman.style.transform = 'rotate(0deg)';
+                animateLine(leftArm, { x2: -25, y2: -10 }, 250);
+                animateLine(rightArm, { x2: 25, y2: -10 }, 250, () => {
+                    isAnimating = false;
+                });
+                return;
+            }
+            
+            const rotation = danceStep % 2 === 0 ? -10 : 10;
+            stickman.style.transformOrigin = '0 0';
+            stickman.style.transform = `rotate(${rotation}deg)`;
+            
+            if (danceStep % 2 === 0) {
+                animateLine(leftArm, { x2: -30, y2: -35 }, 250);
+                animateLine(rightArm, { x2: 30, y2: -35 }, 250);
+            } else {
+                animateLine(leftArm, { x2: -25, y2: -10 }, 250);
+                animateLine(rightArm, { x2: 25, y2: -10 }, 250);
+            }
+            
+            danceStep++;
+        }, 500);
     }
     
     // Animation: Walk
@@ -155,71 +200,44 @@ document.addEventListener('DOMContentLoaded', function() {
         if (isAnimating) return;
         isAnimating = true;
         
-        const tl = gsap.timeline({
-            onComplete: () => { isAnimating = false; }
-        });
+        const currentTransform = stickman.getAttribute('transform') || 'translate(100, 250)';
+        const match = currentTransform.match(/translate\(([^,]+),\s*([^)]+)\)/);
+        let currentX = match ? parseFloat(match[1]) : 100;
+        const baseY = match ? parseFloat(match[2]) : 250;
         
-        // Walk cycle
-        for (let i = 0; i < 4; i++) {
-            tl.to(stickman, {
-                x: `+=${50}`,
-                duration: 0.5,
-                ease: "none"
-            })
-            .to(leftLeg, {
-                attr: { x2: -25, y2: 50 },
-                duration: 0.25,
-                ease: "power1.inOut"
-            }, `-=0.5`)
-            .to(rightLeg, {
-                attr: { x2: 15, y2: 65 },
-                duration: 0.25,
-                ease: "power1.inOut"
-            }, `-=0.5`)
-            .to(leftArm, {
-                attr: { x2: -20, y2: -5 },
-                duration: 0.25,
-                ease: "power1.inOut"
-            }, `-=0.5`)
-            .to(rightArm, {
-                attr: { x2: 30, y2: -15 },
-                duration: 0.25,
-                ease: "power1.inOut"
-            }, `-=0.5`)
-            // Second step
-            .to(leftLeg, {
-                attr: { x2: -15, y2: 65 },
-                duration: 0.25,
-                ease: "power1.inOut"
-            }, `-=0.25`)
-            .to(rightLeg, {
-                attr: { x2: 25, y2: 50 },
-                duration: 0.25,
-                ease: "power1.inOut"
-            }, `-=0.25`)
-            .to(leftArm, {
-                attr: { x2: -30, y2: -15 },
-                duration: 0.25,
-                ease: "power1.inOut"
-            }, `-=0.25`)
-            .to(rightArm, {
-                attr: { x2: 20, y2: -5 },
-                duration: 0.25,
-                ease: "power1.inOut"
-            }, `-=0.25`);
-        }
-        
-        // Reset limbs
-        tl.to([leftLeg, rightLeg], {
-            attr: { x2: function(i) { return i === 0 ? -20 : 20; }, y2: 60 },
-            duration: 0.3,
-            ease: "power2.out"
-        })
-        .to([leftArm, rightArm], {
-            attr: { x2: function(i) { return i === 0 ? -25 : 25; }, y2: -10 },
-            duration: 0.3,
-            ease: "power2.out"
-        }, "-=0.3");
+        let walkStep = 0;
+        const walkInterval = setInterval(() => {
+            if (walkStep >= 8) {
+                clearInterval(walkInterval);
+                // Reset limbs
+                animateLine(leftLeg, { x2: -20, y2: 60 }, 300);
+                animateLine(rightLeg, { x2: 20, y2: 60 }, 300);
+                animateLine(leftArm, { x2: -25, y2: -10 }, 300);
+                animateLine(rightArm, { x2: 25, y2: -10 }, 300, () => {
+                    isAnimating = false;
+                });
+                return;
+            }
+            
+            // Move forward
+            currentX += 25;
+            stickman.setAttribute('transform', `translate(${currentX}, ${baseY})`);
+            
+            // Alternate leg and arm movements
+            if (walkStep % 2 === 0) {
+                animateLine(leftLeg, { x2: -25, y2: 50 }, 250);
+                animateLine(rightLeg, { x2: 15, y2: 65 }, 250);
+                animateLine(leftArm, { x2: -20, y2: -5 }, 250);
+                animateLine(rightArm, { x2: 30, y2: -15 }, 250);
+            } else {
+                animateLine(leftLeg, { x2: -15, y2: 65 }, 250);
+                animateLine(rightLeg, { x2: 25, y2: 50 }, 250);
+                animateLine(leftArm, { x2: -30, y2: -15 }, 250);
+                animateLine(rightArm, { x2: 20, y2: -5 }, 250);
+            }
+            
+            walkStep++;
+        }, 500);
     }
     
     // Text-to-Speech function

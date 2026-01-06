@@ -12,7 +12,7 @@ A fun and interactive website showcasing animated stick-men characters with Text
 
 - **Text-to-Speech**: Make your stick-man speak! Enter any text and select a voice to generate speech using the TTS API.
 
-- **Smooth Animations**: Powered by GSAP (GreenSock Animation Platform) for fluid, professional animations.
+- **Smooth Animations**: Powered by native JavaScript and requestAnimationFrame for fluid, performant animations.
 
 - **Responsive Design**: Works on desktop and mobile devices.
 
@@ -45,8 +45,7 @@ animation-website/
 
 - **HTML5**: Structure and SVG canvas for animations
 - **CSS3**: Styling with gradients, flexbox, and responsive design
-- **JavaScript (ES6+)**: Animation logic and API integration
-- **GSAP 3.12**: Professional-grade animation library
+- **JavaScript (ES6+)**: Animation logic and API integration using native requestAnimationFrame
 - **TTS API**: Text-to-speech service from https://lazypy.ro/tts/
 
 ## How to Use
