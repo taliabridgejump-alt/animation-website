@@ -25,7 +25,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Helper function to animate an element's transform
     function animate(element, transforms, duration, callback) {
         const startTime = performance.now();
-        const initialTransform = element.getAttribute('transform') || '';
         
         function step(currentTime) {
             const elapsed = currentTime - startTime;
@@ -240,8 +239,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Text-to-Speech function
-    // Note: Uses third-party TTS API from lazypy.ro
-    // In production, consider adding fallback to browser's native Speech Synthesis API
+    // Uses third-party TTS API from lazypy.ro as specified in requirements
     async function playTextToSpeech() {
         const text = ttsInput.value.trim();
         
