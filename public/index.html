@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animation Website - Cepstral TTS</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎙️ Animation Website</h1>
+            <p class="subtitle">Text-to-Speech with Cepstral Integration</p>
+        </header>
+
+        <main>
+            <section class="control-panel">
+                <div class="form-group">
+                    <label for="voice-select">Select TTS Voice:</label>
+                    <select id="voice-select" class="form-control">
+                        <option value="">Loading voices...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="text-input">Enter Text:</label>
+                    <textarea 
+                        id="text-input" 
+                        class="form-control" 
+                        rows="6" 
+                        placeholder="Type the text you want to convert to speech..."
+                        maxlength="5000"
+                    >Hello! This is a demonstration of the Cepstral Text-to-Speech system using the David voice.</textarea>
+                    <div class="char-counter">
+                        <span id="char-count">0</span> / 5000 characters
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button id="generate-btn" class="btn btn-primary">
+                        🎤 Generate Speech
+                    </button>
+                    <button id="stop-btn" class="btn btn-secondary" disabled>
+                        ⏹️ Stop
+                    </button>
+                </div>
+
+                <div id="status-message" class="status-message"></div>
+            </section>
+
+            <section class="animation-panel">
+                <div class="animation-container">
+                    <div id="character" class="character">
+                        <div class="character-body">
+                            <div class="character-head">
+                                <div class="character-face">
+                                    <div class="eyes">
+                                        <div class="eye left"></div>
+                                        <div class="eye right"></div>
+                                    </div>
+                                    <div class="mouth" id="mouth"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="audio-visualizer" id="visualizer">
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                    </div>
+                </div>
+
+                <div class="audio-controls">
+                    <audio id="audio-player" controls></audio>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <div class="info-panel">
+                <h3>About</h3>
+                <p>This animation website demonstrates Cepstral TTS integration using the David 4.1.0 voice.</p>
+                <p><strong>Provider:</strong> Cepstral</p>
+                <p><strong>Voice:</strong> David (Male, US English)</p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
