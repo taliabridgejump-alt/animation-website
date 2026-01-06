@@ -15,11 +15,12 @@ app.use(express.static('public'));
 app.use('/audio', express.static('assets/audio'));
 
 // Cepstral configuration
+// Note: In production, these should be loaded from environment variables
 const CEPSTRAL_CONFIG = {
-  license: '9a-9f615f-8a8671-89fa16-cf9134-77a336',
-  name: 'Black Rider',
-  company: 'BRD Cult',
-  voice: 'David 4.1.0'
+  license: process.env.CEPSTRAL_LICENSE || '9a-9f615f-8a8671-89fa16-cf9134-77a336',
+  name: process.env.CEPSTRAL_NAME || 'Black Rider',
+  company: process.env.CEPSTRAL_COMPANY || 'BRD Cult',
+  voice: process.env.CEPSTRAL_VOICE || 'David 4.1.0'
 };
 
 // Ensure audio directory exists
@@ -198,10 +199,12 @@ app.post('/api/generate-speech', async (req, res) => {
       });
     }
     
-    // Log the request (exclude sensitive data in production logs)
-    console.log(`Generating speech for text: "${text.substring(0, 50)}..."`);
-    console.log(`Using voice: ${voice || 'david-cepstral'}`);
-    console.log(`License holder: ${CEPSTRAL_CONFIG.name}, ${CEPSTRAL_CONFIG.company}`);
+    // Log the request (in production, use structured logging and avoid logging user input)
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`Generating speech for text: "${text.substring(0, 50)}..."`);
+      console.log(`Using voice: ${voice || 'david-cepstral'}`);
+      console.log(`License holder: ${CEPSTRAL_CONFIG.name}, ${CEPSTRAL_CONFIG.company}`);
+    }
     
     // Generate speech using Cepstral
     const result = await generateCepstralSpeech(text);
@@ -256,5 +259,7 @@ app.listen(PORT, () => {
   console.log(`Cepstral TTS API Server running on http://localhost:${PORT}`);
   console.log(`Voice: ${CEPSTRAL_CONFIG.voice}`);
   console.log(`Licensed to: ${CEPSTRAL_CONFIG.name}, ${CEPSTRAL_CONFIG.company}`);
-  console.log(`License key: ${CEPSTRAL_CONFIG.license.substring(0, 10)}...`);
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`License key: ${CEPSTRAL_CONFIG.license.substring(0, 10)}...`);
+  }
 });
