@@ -71,7 +71,6 @@ The TTS feature uses the LazyPy TTS API:
 Works on all modern browsers that support:
 - HTML5 Canvas/SVG
 - ES6 JavaScript
-- GSAP 3.x
 - Fetch API
 
 ## License

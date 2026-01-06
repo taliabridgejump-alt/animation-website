@@ -171,7 +171,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const danceInterval = setInterval(() => {
             if (danceStep >= 6) {
                 clearInterval(danceInterval);
-                stickman.style.transform = 'rotate(0deg)';
+                stickman.setAttribute('transform', `translate(${baseX}, ${baseY})`);
                 animateLine(leftArm, { x2: -25, y2: -10 }, 250);
                 animateLine(rightArm, { x2: 25, y2: -10 }, 250, () => {
                     isAnimating = false;
@@ -180,8 +180,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             const rotation = danceStep % 2 === 0 ? -10 : 10;
-            stickman.style.transformOrigin = '0 0';
-            stickman.style.transform = `rotate(${rotation}deg)`;
+            stickman.setAttribute('transform', `translate(${baseX}, ${baseY}) rotate(${rotation})`);
             
             if (danceStep % 2 === 0) {
                 animateLine(leftArm, { x2: -30, y2: -35 }, 250);
@@ -241,6 +240,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Text-to-Speech function
+    // Note: Uses third-party TTS API from lazypy.ro
+    // In production, consider adding fallback to browser's native Speech Synthesis API
     async function playTextToSpeech() {
         const text = ttsInput.value.trim();
         
@@ -260,6 +261,7 @@ document.addEventListener('DOMContentLoaded', function() {
         showStatus('Generating speech...', 'info');
         
         try {
+            // API call to external TTS service
             const response = await fetch('https://lazypy.ro/tts/request', {
                 method: 'POST',
                 headers: {
