@@ -4,15 +4,32 @@ const path = require('path');
 const fs = require('fs');
 const { spawn } = require('child_process');
 const crypto = require('crypto');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Rate limiting configuration
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.'
+});
+
+const cleanupLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5, // Limit each IP to 5 cleanup requests per hour
+  message: 'Too many cleanup requests, please try again later.'
+});
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 app.use('/audio', express.static('assets/audio'));
+
+// Apply rate limiting to API routes
+app.use('/api', apiLimiter);
 
 // Cepstral configuration
 // Note: In production, these should be loaded from environment variables
@@ -223,7 +240,7 @@ app.post('/api/generate-speech', async (req, res) => {
 /**
  * Clean up old audio files (optional maintenance endpoint)
  */
-app.post('/api/cleanup', (req, res) => {
+app.post('/api/cleanup', cleanupLimiter, (req, res) => {
   try {
     const files = fs.readdirSync(audioDir);
     const now = Date.now();
