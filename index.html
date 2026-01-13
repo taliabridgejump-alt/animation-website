@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Stick-Men with TTS</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Animated Stick-Men Theatre</h1>
+            <p>Select an animation and make your stick-man speak!</p>
+        </header>
+        
+        <div class="main-content">
+            <!-- Animation Canvas Area -->
+            <div class="animation-area">
+                <svg id="animation-canvas" width="600" height="400" viewBox="0 0 600 400">
+                    <!-- Background -->
+                    <rect width="600" height="400" fill="#e3f2fd"/>
+                    <!-- Ground line -->
+                    <line x1="0" y1="350" x2="600" y2="350" stroke="#666" stroke-width="2"/>
+                    
+                    <!-- Stick-man character -->
+                    <g id="stickman" transform="translate(100, 250)">
+                        <!-- Head -->
+                        <circle id="head" cx="0" cy="-60" r="20" fill="none" stroke="#333" stroke-width="3"/>
+                        <!-- Body -->
+                        <line id="body" x1="0" y1="-40" x2="0" y2="20" stroke="#333" stroke-width="3"/>
+                        <!-- Left arm -->
+                        <line id="left-arm" x1="0" y1="-30" x2="-25" y2="-10" stroke="#333" stroke-width="3"/>
+                        <!-- Right arm -->
+                        <line id="right-arm" x1="0" y1="-30" x2="25" y2="-10" stroke="#333" stroke-width="3"/>
+                        <!-- Left leg -->
+                        <line id="left-leg" x1="0" y1="20" x2="-20" y2="60" stroke="#333" stroke-width="3"/>
+                        <!-- Right leg -->
+                        <line id="right-leg" x1="0" y1="20" x2="20" y2="60" stroke="#333" stroke-width="3"/>
+                    </g>
+                </svg>
+            </div>
+            
+            <!-- Control Panel -->
+            <div class="control-panel">
+                <div class="section">
+                    <h2>Animation Controls</h2>
+                    <div class="button-group">
+                        <button class="btn" id="wave-btn">Wave</button>
+                        <button class="btn" id="jump-btn">Jump</button>
+                        <button class="btn" id="dance-btn">Dance</button>
+                        <button class="btn" id="walk-btn">Walk</button>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h2>Text-to-Speech</h2>
+                    <div class="tts-controls">
+                        <textarea 
+                            id="tts-input" 
+                            placeholder="Enter text for the stick-man to speak..."
+                            rows="4"
+                        ></textarea>
+                        <div class="voice-select">
+                            <label for="voice-selector">Voice:</label>
+                            <select id="voice-selector">
+                                <option value="Matthew">Matthew</option>
+                                <option value="Joanna">Joanna</option>
+                                <option value="Joey">Joey</option>
+                                <option value="Amy">Amy</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" id="play-tts-btn">Play Speech</button>
+                        <div id="status-message"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Load Scripts -->
+    <script src="script.js"></script>
+</body>
+</html>
